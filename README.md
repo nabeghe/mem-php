@@ -38,7 +38,7 @@ Mem::del($key, $group = 'default'): bool
 Mem::all(): array
 
 // Returns all keys and values of a group.
-Mem::group($group = 'default'): array
+Mem::group($group = 'default'): Storage
 
 // Returns the number of existing groups.
 Mem::groupsCount(): int
@@ -52,6 +52,37 @@ Mem::reset(): bool
 ```
 
 <hr>
+
+### Configuration
+
+The `config` method is used for configuration, with the first argument being the group name & the second argument as an array to config that group.
+If the second argument is `false` or not set, it returns the current config.
+
+The `configProp` method retrieves a key's value from the config, with the key and group name as parameters.
+
+The default config value is in `DEFAULT_CONFIG` const.
+
+Currently, there's only one configuration, `length_limit`, with a default value of `-1`, which defines the group size.
+When the item count exceeds this, the first item is removed.
+`-1` means unlimited, also, `0` is currently not useful & should not be used.
+
+```php
+Mem::config('default', ['length_limit' => 3]);
+
+Mem::set('item_1', 'value 1');
+Mem::set('item_2', 'value 2');
+Mem::set('item_3', 'value 3');
+Mem::set('item_4', 'value 4');
+
+/*
+ * Items in the default group:
+ *  [
+ *      'item_2' => 'value 2',
+ *      'item_3' => 'value 3',
+ *      'item_4' => 'value 4'
+ *  ]
+ */
+```
 
 ## 📖 License
 

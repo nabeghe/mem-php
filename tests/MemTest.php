@@ -1,11 +1,14 @@
 <?php declare(strict_types=1);
 
 use Nabeghe\Mem\Mem;
+use Nabeghe\Mem\Storage;
 
 class MemTest extends \PHPUnit\Framework\TestCase
 {
     public function test()
     {
+        Mem::reset();
+
         // has (default group)
         $this->assertFalse(Mem::has('name'));
         $this->assertEquals(0, Mem::groupsCount());
@@ -35,12 +38,12 @@ class MemTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('my_value', Mem::get('my_key', 'my_group'));
 
         $this->assertEquals([
-            'default' => ['name' => 'nabeghe/mem'],
-            'my_group' => ['my_key' => 'my_value'],
-        ], Mem::all());
+            'default',
+            'my_group',
+        ], array_keys(Mem::all()));
 
-        $this->assertEquals(['name' => 'nabeghe/mem'], Mem::group());
-        $this->assertEquals(['my_key' => 'my_value'], Mem::group('my_group'));
+        $this->assertEquals((new Storage(['name' => 'nabeghe/mem']))->getData(), Mem::group()->getData());
+        $this->assertEquals((new Storage(['my_key' => 'my_value']))->getData(), Mem::group('my_group')->getData());
 
         $this->assertEquals(2, Mem::groupsCount());
 
@@ -67,5 +70,21 @@ class MemTest extends \PHPUnit\Framework\TestCase
 
         Mem::reset();
         $this->assertEquals([], Mem::all());
+    }
+
+    public function testLengthLimit()
+    {
+        Mem::reset();
+
+        Mem::config('default', ['length_limit' => 3]);
+
+        Mem::set('item_1', 'value 1');
+        Mem::set('item_2', 'value 2');
+        Mem::set('item_3', 'value 3');
+        Mem::set('item_4', 'value 4');
+
+        $expected = ['item_2' => 'value 2', 'item_3' => 'value 3', 'item_4' => 'value 4'];
+
+        $this->assertEquals((new Storage($expected))->getData(), Mem::group()->getData());
     }
 }
