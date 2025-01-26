@@ -19,17 +19,54 @@ class Storage implements \ArrayAccess
         return isset($this->data[$key]);
     }
 
+    public function match($regex)
+    {
+        foreach ($this->data as $key => $value) {
+            if (preg_match($regex, $key)) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
+    public function matches($regex)
+    {
+        $matches = array_filter($this->data, function ($key) use ($regex) {
+            return preg_match($regex, $key);
+        }, ARRAY_FILTER_USE_KEY);
+
+        return $matches ?: null;
+    }
+
     public function add($key, $value)
     {
         $this->data[$key] = $value;
         $this->count++;
     }
 
-    public function del($key)
+    public function del($key, $isRegex = false)
     {
         if (isset($this->data[$key])) {
             unset($this->data[$key]);
+            return true;
         }
+
+        return false;
+    }
+
+    public function delMatches($regex)
+    {
+        $success = false;
+
+        foreach ($this->data as $key => $value) {
+            if (preg_match($regex, $key)) {
+                unset($this->data[$key]);
+                $success = true;
+            }
+        }
+
+        return $success;
     }
 
     public function delValue($value)

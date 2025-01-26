@@ -12,6 +12,24 @@ interface MemInterface
     public static function has($key, $group = 'default');
 
     /**
+     * Returns the first key of an item that matches the regex.
+     *
+     * @param  string  $regex
+     * @param  string  $group
+     * @return ?string
+     */
+    public static function match($regex, $group = 'default');
+
+    /**
+     * Returns items whose keys match the regex.
+     *
+     * @param  string  $regex
+     * @param  string  $group
+     * @return ?array
+     */
+    public static function matches($regex, $group = 'default');
+
+    /**
      * Checks if a group exists.
      *
      * @param  string  $group
@@ -49,9 +67,18 @@ interface MemInterface
     public static function del($key, $group = 'default');
 
     /**
-     * Returns all groups and their keys.
+     * Deletes items based on key matching with regex.
      *
-     * @return array
+     * @param  string  $regex
+     * @param  string  $group
+     * @return bool
+     */
+    public static function delMatches($regex, $group = 'default');
+
+    /**
+     * Returns all storages (groups) and their keys.
+     *
+     * @return Storage[]
      */
     public static function all();
 

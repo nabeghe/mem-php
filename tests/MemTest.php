@@ -8,6 +8,7 @@ class MemTest extends \PHPUnit\Framework\TestCase
     public function test()
     {
         Mem::reset();
+        Mem::config('default', ['length_limit' => -1]);
 
         // has (default group)
         $this->assertFalse(Mem::has('name'));
@@ -86,5 +87,42 @@ class MemTest extends \PHPUnit\Framework\TestCase
         $expected = ['item_2' => 'value 2', 'item_3' => 'value 3', 'item_4' => 'value 4'];
 
         $this->assertEquals((new Storage($expected))->getData(), Mem::group()->getData());
+    }
+
+    public function testMatches()
+    {
+        Mem::reset();
+        Mem::config('default', ['length_limit' => -1]);
+
+        Mem::set('nabeghe_1', 'nabeghe value 1');
+        Mem::set('nabeghe_2', 'nabeghe value 2');
+        Mem::set('mem_1', 'mem value 1');
+        Mem::set('mem_2', 'mem value 2');
+
+        $this->assertSame('nabeghe_1', Mem::match('/^nabeghe_.*/'));
+
+        $this->assertSame([
+            'nabeghe_1' => 'nabeghe value 1',
+            'nabeghe_2' => 'nabeghe value 2',
+        ], Mem::matches('/^nabeghe_.*/'));
+
+        $this->assertTrue(Mem::delMatches('/^nabeghe_.*/'));
+
+        $this->assertNull(Mem::match('/^nabeghe_.*/'));
+
+        $this->assertNull(Mem::matches('/^nabeghe_.*/'));
+
+        Mem::set('nabeghe_1', 'nabeghe value 1');
+        Mem::set('nabeghe_2', 'nabeghe value 2');
+
+        $this->assertSame([
+            'nabeghe_1' => 'nabeghe value 1',
+            'nabeghe_2' => 'nabeghe value 2',
+        ], Mem::matches('/^nabeghe_.*/'));
+
+        $this->assertSame([
+            'mem_1' => 'mem value 1',
+            'mem_2' => 'mem value 2',
+        ], Mem::matches('/^mem_.*/'));
     }
 }

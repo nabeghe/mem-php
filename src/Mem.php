@@ -10,21 +10,12 @@ class Mem implements MemInterface
     ];
 
     /**
-     * Everything is stored here
      * @var Storage[]
      */
-    protected static array $storage = [];
+    protected static array $storages = [];
 
-    /**
-     * @var array
-     */
     protected static array $configs = [];
 
-    /**
-     * @param  string  $group
-     * @param  array|null|false  $config
-     * @return mixed|void|null
-     */
     public static function config($group = 'default', $config = false)
     {
         if ($config === false) {
@@ -36,6 +27,8 @@ class Mem implements MemInterface
         } else {
             static::$configs[$group] = $config;
         }
+
+        return null;
     }
 
     public static function configProp($name, $group = 'default')
@@ -45,118 +38,97 @@ class Mem implements MemInterface
             : (isset(static::DEFAULT_CONFIG[$name]) ? static::DEFAULT_CONFIG[$name] : null);
     }
 
-
-    /**
-     * @param  string  $key
-     * @param  string  $group
-     * @return bool
-     */
     public static function has($key, $group = 'default')
     {
-        return static::hasGroup($group) && isset(static::$storage[$group][$key]);
+        return static::hasGroup($group) && isset(static::$storages[$group][$key]);
     }
 
-    /**
-     * @param  string  $group
-     * @return bool
-     */
+    public static function match($regex, $group = 'default')
+    {
+        if (!static::hasGroup($group)) {
+            return null;
+        }
+
+        return static::$storages[$group]->match($regex);
+    }
+
+    public static function matches($regex, $group = 'default')
+    {
+        if (!static::hasGroup($group)) {
+            return null;
+        }
+
+        return static::$storages[$group]->matches($regex);
+    }
+
     public static function hasGroup($group = 'default')
     {
-        return isset(static::$storage[$group]);
+        return isset(static::$storages[$group]);
     }
 
-    /**
-     * @param  string  $key
-     * @param  string  $group
-     * @param  mixed  $default
-     * @return mixed|null
-     */
     public static function get($key, $group = 'default', $default = null)
     {
-        return static::has($key, $group) ? static::$storage[$group][$key] : $default;
+        return static::has($key, $group) ? static::$storages[$group][$key] : $default;
     }
 
-    /**
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  string  $group
-     * @return void
-     */
     public static function set($key, $value, $group = 'default')
     {
         if (!static::hasGroup($group)) {
-            static::$storage[$group] = new Storage();
+            static::$storages[$group] = new Storage();
         }
 
-        static::$storage[$group][$key] = $value;
+        static::$storages[$group][$key] = $value;
 
         $length_limit = static::configProp('length_limit', $group);
-        if ($length_limit > 0 && static::$storage[$group]->count() > $length_limit) {
-            static::$storage[$group]->del(static::$storage[$group]->firstKey());
+        if ($length_limit > 0 && static::$storages[$group]->count() > $length_limit) {
+            static::$storages[$group]->del(static::$storages[$group]->firstKey());
         }
     }
 
-    /**
-     * @param  string  $key
-     * @param  string  $group
-     * @return bool
-     */
     public static function del($key, $group = 'default')
     {
         if (static::has($key, $group)) {
-            unset(static::$storage[$group][$key]);
+            unset(static::$storages[$group][$key]);
             return true;
         }
 
         return false;
     }
 
-    /**
-     * @return Storage[]
-     */
+    public static function delMatches($regex, $group = 'default')
+    {
+        return static::hasGroup($group) && static::$storages[$group]->delMatches($regex);
+    }
+
     public static function all()
     {
-        return static::$storage;
+        return static::$storages;
     }
 
-    /**
-     * @param  string  $group
-     * @return Storage|null
-     */
     public static function group($group = 'default')
     {
-        return static::hasGroup($group) ? static::$storage[$group] : null;
+        return static::hasGroup($group) ? static::$storages[$group] : null;
     }
 
-    /**
-     * @return int
-     */
     public static function groupsCount()
     {
-        return count(array_keys(static::$storage));
+        return count(array_keys(static::$storages));
     }
 
-    /**
-     * @param $group
-     * @return bool
-     */
     public static function drop($group = 'default')
     {
         if (static::hasGroup($group)) {
-            unset(static::$storage[$group]);
+            unset(static::$storages[$group]);
             return true;
         }
 
         return false;
     }
 
-    /**
-     * @return bool
-     */
     public static function reset()
     {
         if (static::groupsCount()) {
-            static::$storage = [];
+            static::$storages = [];
             return true;
         }
 

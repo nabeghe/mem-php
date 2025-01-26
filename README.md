@@ -22,6 +22,12 @@ composer require nabeghe/mem
 // Checks if a key exists in a cache group.
 Mem::has(mixed $key, mixed $group = 'default'): bool
 
+// Returns the first key of an item that matches the regex.
+Mem::match($regex, $group = 'default'): ?string
+
+// Returns items whose keys match the regex.
+Mem::matches($regex, $group = 'default'): ?array
+
 // Checks if a group exists.
 Mem::hasGroup(mixed $group): bool
 
@@ -34,7 +40,10 @@ Mem::set(mixed $key, mixed $value, mixed $group = 'default'): bool
 // Deletes a key from a group.
 Mem::del($key, $group = 'default'): bool
 
-// Returns all groups and their keys.
+// Deletes items based on key matching with regex.
+Mem::delMatches($regex, $group = 'default'): bool
+
+// Returns all storages (groups) and their keys.
 Mem::all(): array
 
 // Returns all keys and values of a group.
